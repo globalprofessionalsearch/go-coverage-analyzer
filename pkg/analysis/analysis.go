@@ -1,21 +1,39 @@
+// Package analysis is responsible for all business logic associated with
+// conducting a coverage analysis
 package analysis
 
 import (
 	"bufio"
 	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+
+	//nolint:exptostd
 	"golang.org/x/exp/constraints"
+)
+
+var (
+	ErrUnsafeCoverProfilePath = errors.New("cover profile path must be prefixed with ./")
 )
 
 func Run(coverProfileFileName string, coverageStandard float32) (*ProjectSummary, error) {
 	// open the raw coverage file
-	coverageFile, err := os.Open(coverProfileFileName)
+	// jumping through some security hoops
+	// see https://securego.io/docs/rules/g304
+	sanitizedPath := filepath.Clean(coverProfileFileName)
+	safeBasePath := "./"
+	if !strings.HasPrefix(sanitizedPath, safeBasePath) {
+		return nil, ErrUnsafeCoverProfilePath
+	}
+	coverageFile, err := os.Open(sanitizedPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "error reading coverage file")
 	}
+	//nolint:errcheck
 	defer coverageFile.Close()
 
 	// convert each raw line into a block object
@@ -77,9 +95,10 @@ func Run(coverProfileFileName string, coverageStandard float32) (*ProjectSummary
 			}
 		}
 		packageSummaries = append(packageSummaries, &PackageSummary{
-			PackageName:           packageName,
-			BlockCount:            blockCount,
-			BlockCallCount:        blockCallCount,
+			PackageName:    packageName,
+			BlockCount:     blockCount,
+			BlockCallCount: blockCallCount,
+			//nolint:mnd
 			CoveragePercentage:    100.0 * safeDivide(blockCallCount, blockCount),
 			BlocksNotCoveredCount: blockCount - blockCallCount,
 		})
@@ -91,6 +110,7 @@ func Run(coverProfileFileName string, coverageStandard float32) (*ProjectSummary
 
 	projectSummary.BlocksNotCoveredCount = projectSummary.BlockCount - projectSummary.BlockCallCount
 
+	//nolint:mnd
 	projectSummary.CoveragePercentage = 100 * safeDivide(projectSummary.BlockCallCount, projectSummary.BlockCount)
 	projectSummary.CoverageStandard = coverageStandard
 	projectSummary.CoverageStandardMet = projectSummary.CoveragePercentage >= projectSummary.CoverageStandard

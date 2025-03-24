@@ -50,7 +50,7 @@ type PackageSummary struct {
 }
 
 type ProjectSummary struct {
-	//PackageCount is the total number of packages
+	// PackageCount is the total number of packages
 	PackageCount int
 
 	// BlockCount is the number of statement blocks present in the project.

@@ -1,3 +1,4 @@
+// Package main is the entrypoint for go-coverage-analysis
 package main
 
 import (
@@ -13,12 +14,16 @@ var (
 	coverageStandardPercent float32
 )
 
+const (
+	defaultCoverageStandard = 75
+)
+
 func init() {
-	RunCommand.Flags().StringVarP(&coverProfileFileName, "coverprofile", "c", "coverage.out", "the name of the coverage profile file to analyze")
-	RunCommand.Flags().Float32VarP(&coverageStandardPercent, "standard", "s", 75, "minimum coverage percentage required (exit with error if not met)")
+	runCommand.Flags().StringVarP(&coverProfileFileName, "coverprofile", "c", "coverage.out", "the name of the coverage profile file to analyze")
+	runCommand.Flags().Float32VarP(&coverageStandardPercent, "standard", "s", defaultCoverageStandard, "minimum coverage percentage required (exit with error if not met)")
 }
 
-var RunCommand = &cobra.Command{
+var runCommand = &cobra.Command{
 	Use:   "run",
 	Short: "Conducts codebase coverage analysis.",
 	Long: `Description: 
@@ -26,12 +31,12 @@ var RunCommand = &cobra.Command{
 	single time. This is helpful when tests have been run in coverpkg mode. Once
 	the coverage output is consolidated, coverage statistics are compiled by
 	package as well as across the entire codebase and returned via stdout.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		fmt.Printf("\nChecking coverage...\n")
 
-		projectSummary, err := analysis.Run(*&coverProfileFileName, *&coverageStandardPercent)
+		projectSummary, err := analysis.Run(coverProfileFileName, coverageStandardPercent)
 		if err != nil {
-			return err
+			return fmt.Errorf("An error occurred during the analysis:\n%w", err)
 		}
 
 		fmt.Println("\nPackageName", "CoveragePercentage", "Blocks", "BlocksCovered", "CoveragePercentage")
