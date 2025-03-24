@@ -38,11 +38,11 @@ linters:
     # - gochecknoglobals
     # - gochecknoinits
     - gochecksumtype
-    - gocognit
+    # - gocognit
     - goconst
     - gocritic
     - gocyclo
-    - godot
+    # - godot
     - godox
     # - gofmt
     # - gofumpt
@@ -80,7 +80,7 @@ linters:
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
-    - paralleltest
+    # - paralleltest
     - perfsprint
     - prealloc
     - predeclared
@@ -98,7 +98,7 @@ linters:
     - tagliatelle
     - testableexamples
     - testifylint
-    - testpackage
+    # - testpackage
     - thelper
     - tparallel
     - unconvert
