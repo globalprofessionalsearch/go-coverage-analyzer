@@ -5,9 +5,7 @@ package analysis
 import (
 	"bufio"
 	"os"
-	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
@@ -22,14 +20,8 @@ var (
 
 func Run(coverProfileFileName string, coverageStandard float32) (*ProjectSummary, error) {
 	// open the raw coverage file
-	// jumping through some security hoops
-	// see https://securego.io/docs/rules/g304
-	sanitizedPath := filepath.Clean(coverProfileFileName)
-	safeBasePath := "./"
-	if !strings.HasPrefix(sanitizedPath, safeBasePath) {
-		return nil, ErrUnsafeCoverProfilePath
-	}
-	coverageFile, err := os.Open(sanitizedPath)
+	//nolint: gosec
+	coverageFile, err := os.Open(coverProfileFileName)
 	if err != nil {
 		return nil, errors.Wrap(err, "error reading coverage file")
 	}
